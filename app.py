@@ -1,6 +1,8 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, make_response
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import csv
+from io import StringIO
 
 # __name
 app = Flask(__name__)
@@ -19,7 +21,7 @@ class Inventory(db.Model):
 #decorator
 @app.route('/', methods=['POST', 'GET'])
 def index():
-
+    #print("index")
     if request.method == 'POST':
         inv_content = request.form['content']
         new_inv = Inventory(content = inv_content)
@@ -39,6 +41,7 @@ def index():
 
 @app.route('/delete/<int:id>')
 def delete(id):
+    #print("delete", id)
     inv_to_delete = Inventory.query.get_or_404(id)
 
     try:
@@ -51,7 +54,7 @@ def delete(id):
 
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
 def update(id):
-
+    #print("update", id)
     inv = Inventory.query.get_or_404(id)
 
     if request.method == 'POST':
@@ -64,6 +67,22 @@ def update(id):
             return "There was an issue updating your inventory"
     else:
         return render_template('update.html', inv=inv)
+
+@app.route('/export', methods=['GET', 'POST'])
+def export():
+    #print("export method ")
+    si = StringIO()
+    cw = csv.writer(si)
+    all_inventory = Inventory.query.order_by(Inventory.date_created).all()
+    print(all_inventory)
+    cw.writerow(["id", "content", "date"])
+    for inv in all_inventory:
+        inv_list = [ str(inv.id), inv.content, str(inv.date_created)]
+        cw.writerow(inv_list)
+    response = make_response(si.getvalue())
+    response.headers['Content-Disposition'] = 'attachment; filename=report.csv'
+    response.headers["Content-type"] = "text/csv"
+    return response
 
 if __name__ == "__main__":
     app.run(debug=True)

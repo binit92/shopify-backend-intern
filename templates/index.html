@@ -8,28 +8,37 @@
 {% block body %}
 <div class ="content">
     <h1 style="text-align: center">Inventory Master </h1>
+    {% if all_inventory|length < 1 %}
+    <h4style="text-align: center"> There is nothing in inventory. Add one item below !</h4>
+    {% else %}
 
-    <table>
-        <tr>        
-            <th>Inventory</th>
-            <th>Added</th>
-            <th>Actions</th>
-        </tr>
+       
 
-        {% for inv in all_inventory %}
-            <tr>
-                <td>{{ inv.content }}</td>
-                <td>{{ inv.date_created.date() }}</td>
-                <td>
-                    <a href="/delete/{{inv.id}}">Delete</a>
-                    <br>
-                    <a href="/update/{{inv.id}}">Update </a>
-
-                </td>
+        <table>
+            <tr>        
+                <th>Inventory</th>
+                <th>Added</th>
+                <th>Actions</th>
+                <th>
+                    <a href="/export">Export</a>
+                </th>
             </tr>
-        {% endfor %}
 
-    </table>
+            {% for inv in all_inventory %}
+                <tr>
+                    <td>{{ inv.content }}</td>
+                    <td>{{ inv.date_created.date() }}</td>
+                    <td>
+                        <a href="/delete/{{inv.id}}">Delete</a>
+                        <br>
+                        <a href="/update/{{inv.id}}">Update </a>
+
+                    </td>
+                </tr>
+            {% endfor %}
+
+         </table>
+    {% endif %}
 
     <form action="/" method="POST">
         <input type="text" name="content" id="content">
